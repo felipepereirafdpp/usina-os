@@ -1,6 +1,9 @@
-﻿namespace UsinaOS.Domain.Enums
+﻿namespace UsinaOS.Domain.Enums;
+
+public enum StatusOS
 {
-    public class Status
-    {
-    }
+    Aberta,
+    EmAndamento,
+    Concluida,
+    Cancelada
 }

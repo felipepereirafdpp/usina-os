@@ -1,6 +1,8 @@
-﻿namespace UsinaOS.Domain.Enums
+﻿namespace UsinaOS.Domain.Enums;
+
+public enum Cargo
 {
-    public class Cargo
-    {
-    }
+    OperadorMaquinas,
+    Encarregado,
+    Administrador
 }

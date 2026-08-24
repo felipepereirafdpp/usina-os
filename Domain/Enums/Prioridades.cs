@@ -1,6 +1,10 @@
-﻿namespace UsinaOS.Domain.Enums
+﻿
+namespace UsinaOS.Domain.Enums;
+
+public enum Prioridades
 {
-    public class Prioridades
-    {
-    }
+    Baixa,
+    Normal,
+    Alta,
+    Urgente
 }
