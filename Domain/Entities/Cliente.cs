@@ -22,7 +22,7 @@ public class Cliente
 
     protected Cliente() { }
 
-    public Cliente(string razaoSocial, string telefone, string email, Endereco endereco, string? observacao = null, string cnpj)
+    public Cliente(string razaoSocial, string telefone, string email, Endereco endereco, string cnpj, string? observacao = null)
 
     {
         if (string.IsNullOrWhiteSpace(razaoSocial))
