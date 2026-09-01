@@ -8,29 +8,14 @@ namespace UsinaOS.Domain.Entities;
 public class OrdemServico
 {
     [Key] public Guid Id { get; set; }
-
-
     [Required][StringLength(50)] public string NumeroOrdemServico { get; set; }
 
-
-
     public Guid ClienteId { get; set; }
-
-
     [Required] public Cliente Cliente { get; set; }
-
-
     [Required] public DateTime DataAbertura { get; set; }
-
-
     [Required] public DateTime DataPrazo { get; set; }
-
-
     [Required] public Prioridades Prioridade { get; set; }
-
-
     [Required] public StatusOS Status { get; set; }
-
     public string? Observacao { get; set; }
 
     private readonly List<ItemOrdemServico> _itensOrdemServico = new();
