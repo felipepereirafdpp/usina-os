@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UsinaOS.Domain.Entities;
 
-public class Cliente
+public class ClienteEntitie
 {
     [Key] public Guid Id { get; set; }
 
@@ -20,9 +20,9 @@ public class Cliente
     [Required] public Endereco Endereco { get; set; }
 
 
-    protected Cliente() { }
+    protected ClienteEntitie() { }
 
-    public Cliente(string razaoSocial, string telefone, string email, Endereco endereco, string cnpj, string? observacao = null)
+    public ClienteEntitie(string razaoSocial, string telefone, string email, Endereco endereco, string cnpj, string? observacao = null)
 
     {
         if (string.IsNullOrWhiteSpace(razaoSocial))

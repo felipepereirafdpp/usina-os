@@ -9,5 +9,7 @@ namespace UsinaOS.DTO.Cliente.Request
         public string Telefone { get; set; }
         public string Email { get; set; }
         public CreateEndereco Endereco { get; set; }
+
+        public string? Observacao { get; set; }
     }
 }

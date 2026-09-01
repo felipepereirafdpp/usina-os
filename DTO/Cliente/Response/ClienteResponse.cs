@@ -10,5 +10,7 @@ namespace UsinaOS.DTO.Cliente.Response
         public string Telefone { get; set; }
 
         public EnderecoResponse Endereco { get; set; }
+
+        public string? Observacao { get; set; }
     }
 }
