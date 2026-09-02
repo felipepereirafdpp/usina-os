@@ -3,7 +3,7 @@ using UsinaOS.Domain.Entities;
 
 public class UsinaOSContext(DbContextOptions<UsinaOSContext> options) : DbContext(options)
 {
-    public DbSet<Cliente> Clientes { get; set; } = default!;
+    public DbSet<ClienteEntitie> Clientes { get; set; } = default!;
     public DbSet<Endereco> Enderecos { get; set; } = default!;
     public DbSet<ItemOrdemServico> ItensOredmServico { get; set; } = default!;
     public DbSet<Funcionario> Funcionarios { get; set; } = default!;
