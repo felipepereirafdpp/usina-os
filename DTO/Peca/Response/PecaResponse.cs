@@ -5,5 +5,6 @@
         public Guid Id { get; set; }
         public string Nome { get; set; }
         public string CodigoPeca { get; set; }
+        public string MaterialPeca { get; set; }
     }
 }
