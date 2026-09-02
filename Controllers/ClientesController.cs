@@ -14,16 +14,18 @@ public class ClientesController : ControllerBase
 
     // GET: api/Cliente
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Cliente>>> GetCliente()
+    public async Task<ActionResult<IEnumerable<ClienteEntitie>>> GetCliente()
     {
         return await _context.Clientes.ToListAsync();
     }
 
     // GET: api/Cliente/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<Cliente>> GetCliente(System.Guid id)
+    public async Task<ActionResult<ClienteEntitie>> GetCliente(System.Guid id)
     {
         var cliente = await _context.Clientes.FindAsync(id);
+
+            
 
         if (cliente == null)
         {
@@ -36,7 +38,7 @@ public class ClientesController : ControllerBase
     // PUT: api/Cliente/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutCliente(System.Guid? id, Cliente cliente)
+    public async Task<IActionResult> PutCliente(System.Guid? id, ClienteEntitie cliente)
     {
         if (id != cliente.Id)
         {
@@ -67,7 +69,7 @@ public class ClientesController : ControllerBase
     // POST: api/Cliente
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<Cliente>> PostCliente(Cliente cliente)
+    public async Task<ActionResult<ClienteEntitie>> PostCliente(ClienteEntitie cliente)
     {
         _context.Clientes.Add(cliente);
         await _context.SaveChangesAsync();
