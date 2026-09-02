@@ -1,6 +1,6 @@
 ﻿namespace UsinaOS.DTO.Endereco.Response
 {
-    public class CreateEnderecoResponse
+    public class EnderecoResponse
     {
         public Guid Id { get; set; }
         public string Logradouro { get; set; }

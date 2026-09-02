@@ -1,8 +1,10 @@
-﻿namespace UsinaOS.DTO.Peca.Response
+﻿namespace UsinaOS.DTO.Comun
 {
     public class ApiResponse<T>
     {
+
         public string Message { get; set; }
         public T Data { get; set; }
+
     }
 }
