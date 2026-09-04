@@ -6,12 +6,9 @@ using UsinaOS.Exceptions.Cliente;
 using UsinaOS.Interfaces.Cliente;
 using UsinaOS.Domain.Entities;
 using UsinaOS.DTO.Endereco.Response;
-<<<<<<< HEAD
-=======
 using UsinaOS.Exceptions.Cliente;
 using Microsoft.AspNetCore.Mvc;
 using UsinaOS.DTO.Endereco.Request;
->>>>>>> feature/criando-service
 namespace UsinaOS.Services.Cliente;
 
 public class ClienteService : IClienteService
@@ -114,11 +111,7 @@ public class ClienteService : IClienteService
         }
         catch (Exception ex)
         {
-<<<<<<< HEAD
-            Console.WriteLine($"Erro ao conectar com o serviço de validação de endereço: {ex.Message}");
-=======
             throw new ArgumentException($"Erro ao conectar com o serviço de validação de endereço: {ex.Message}");
->>>>>>> feature/criando-service
         }
 
         var cliente = new ClienteEntitie(
@@ -172,10 +165,6 @@ public class ClienteService : IClienteService
         return resposta;
     }
 
-<<<<<<< HEAD
-
-
-=======
     //Lembrar de adicionar o [FromQuery] no controller
     public async Task<ClienteResponse> BuscarClientePorIdPorCnpj(Guid? id, string? cnpj)
     {
@@ -451,5 +440,4 @@ public class ClienteService : IClienteService
         }
         return true;
     }
->>>>>>> feature/criando-service
 }
