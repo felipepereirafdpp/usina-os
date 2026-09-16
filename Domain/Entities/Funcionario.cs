@@ -24,7 +24,7 @@ public class FuncionarioEntitie
     public FuncionarioEntitie(string nome, string cpf, string email, string senhaHash, Cargo cargo)
 
     {
-        if (string.IsNullOrWhiteSpace(nome)) { 
+        if (string.IsNullOrWhiteSpace(nome) || nome.Length < 2) { 
             throw new ArgumentException("Nome não pode ser nulo ou vazio.");
         }
 

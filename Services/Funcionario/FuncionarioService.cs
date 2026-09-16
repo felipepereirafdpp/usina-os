@@ -23,7 +23,7 @@ namespace UsinaOS.Services.Funcionario
         }
 
 
-        private async Task<bool> ValidaCpf ( string Cpf)
+        private async Task<bool> ValidaCpf(string Cpf)
         {
             bool resposta = false;
             var cpfCliente = Cpf;
@@ -99,8 +99,8 @@ namespace UsinaOS.Services.Funcionario
 
             }
 
-            
-            
+
+
         }
 
 
@@ -110,7 +110,7 @@ namespace UsinaOS.Services.Funcionario
             {
                 throw new ValidaNomeException("Nome é obrigatorio");
             }
-            if(!await ValidaCpf(dadosFuncionarios.Cpf))
+            if (!await ValidaCpf(dadosFuncionarios.Cpf))
             {
                 throw new ValidaCpfException("CPF invalido");
             }
@@ -196,7 +196,7 @@ namespace UsinaOS.Services.Funcionario
         {
             if (string.IsNullOrWhiteSpace(Cpf) && (Id.HasValue || Id.Value == Guid.Empty))
             {
-                throw new ValidaBuscaCpfId("ID ou Cpf é obrigatorio");
+                throw new ValidaBuscaCpfIdException("ID ou Cpf é obrigatorio");
             }
             if (string.IsNullOrWhiteSpace(Cpf))
             {
@@ -225,7 +225,7 @@ namespace UsinaOS.Services.Funcionario
             }
             else
             {
-                throw new ValidaBuscaCpfId("Nenhum cliente encontrato");
+                throw new ValidaBuscaCpfIdException("Nenhum cliente encontrato");
             }
             var resposta = new FuncionarioResponse
             {
@@ -238,14 +238,89 @@ namespace UsinaOS.Services.Funcionario
             return resposta;
         }
 
-        public async Task<FuncionarioResponse> AtualizarFuncionario(string cpf, CreateFuncionario dadosFuncionario)
+        public async Task<FuncionarioResponse> AtualizarFuncionario(string cpf, UpdateFuncionario dadosFuncionario)
         {
-            if (! await ValidaCpf(cpf) == false)
+            if (!await ValidaCpf(cpf) == false)
+            {
+                throw new ValidaCpfException("CPF invalido");
+            }
+            if (dadosFuncionario == null)
+            {
+                throw new ValidaBuscarFuncionarioException("Informações funcionario são obrigatorias");
+            }
+            if (string.IsNullOrWhiteSpace(dadosFuncionario.Nome))
+            {
+                throw new ValidaNomeException("Nome não pode ser nulo");
+            }
+            if (string.IsNullOrWhiteSpace(dadosFuncionario.Email) || new EmailAddressAttribute().IsValid(dadosFuncionario.Email))
+            {
+                throw new ValidaEmailException("Email é obrigatorio");
+            }
+            if (dadosFuncionario.Cargo == null)
+            {
+                throw new ValidaCargoException("Cargo é obrigatorio");
+            }
+
+            var emailRecebido = await _context.Funcionarios.AnyAsync(u => u.Email == dadosFuncionario.Email && u.Cpf != cpf);
+            if (emailRecebido)
+            {
+                throw new ValidaEmailException("Email ja cadastrado em cpf de outro funconario");
+            }
+
+            var funcionarioProcurado = await _context.Funcionarios.FirstOrDefaultAsync(u => u.Cpf == cpf);
+
+            if (funcionarioProcurado == null)
+            {
+                throw new ValidaBuscaCpfIdException("Funcionario nao encontrado no Banco de Dados");
+            }
+            try
+            {
+                funcionarioProcurado.Nome = dadosFuncionario.Nome;
+                funcionarioProcurado.Email = dadosFuncionario.Email;
+                funcionarioProcurado.Cargo = dadosFuncionario.Cargo;
+
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException("Erro ao Salvar dados",e);
+            }
+           
+            var respota = new FuncionarioResponse
+            {
+                Email = funcionarioProcurado.Email,
+                Nome = funcionarioProcurado.Nome,
+                Cargo = funcionarioProcurado.Cargo
+            };
+
+            return (respota);
+
+
+        }
+
+        public async Task<bool> DeletarFuncionario(string cpf)
+        {
+           if (await ValidaCpf(cpf) == false)
             {
                 throw new ValidaCpfException("CPF invalido");
             }
 
+            var funcionarioBanco = await _context.Funcionarios.FirstOrDefaultAsync(u => u.Cpf == cpf);
+            if (funcionarioBanco == null)
+            {
+                throw new ValidaBuscaCpfIdException("Funcionario nao encontrado");
+            }
 
+            try
+            {
+                _context.Funcionarios.Remove(funcionarioBanco);
+                await _context.SaveChangesAsync();
+            }catch(Exception e)
+            {
+                
+                return false;
+            }
+            return true;
         }
     }
 }
