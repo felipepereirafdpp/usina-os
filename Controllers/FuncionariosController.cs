@@ -14,14 +14,14 @@ public class FuncionariosController : ControllerBase
 
     // GET: api/Funcionario
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Funcionario>>> GetFuncionario()
+    public async Task<ActionResult<IEnumerable<FuncionarioEntitie>>> GetFuncionario()
     {
         return await _context.Funcionarios.ToListAsync();
     }
 
     // GET: api/Funcionario/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<Funcionario>> GetFuncionario(System.Guid id)
+    public async Task<ActionResult<FuncionarioEntitie>> GetFuncionario(System.Guid id)
     {
         var funcionario = await _context.Funcionarios.FindAsync(id);
 
@@ -36,7 +36,7 @@ public class FuncionariosController : ControllerBase
     // PUT: api/Funcionario/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutFuncionario(System.Guid? id, Funcionario funcionario)
+    public async Task<IActionResult> PutFuncionario(System.Guid? id, FuncionarioEntitie funcionario)
     {
         if (id != funcionario.Id)
         {
@@ -67,7 +67,7 @@ public class FuncionariosController : ControllerBase
     // POST: api/Funcionario
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<Funcionario>> PostFuncionario(Funcionario funcionario)
+    public async Task<ActionResult<FuncionarioEntitie>> PostFuncionario(FuncionarioEntitie funcionario)
     {
         _context.Funcionarios.Add(funcionario);
         await _context.SaveChangesAsync();

@@ -4,7 +4,7 @@ using UsinaOS.Domain.Enums;
 
 namespace UsinaOS.Domain.Entities;
 
-public class Funcionario
+public class FuncionarioEntitie
 {
     [Key] public Guid Id { get; set; }
 
@@ -19,12 +19,12 @@ public class Funcionario
     [Required] public Cargo Cargo { get; set; }
 
 
-    protected Funcionario() { }
+    protected FuncionarioEntitie() { }
 
-    public Funcionario(string nome, string cpf, string email, string senhaHash, Cargo cargo)
+    public FuncionarioEntitie(string nome, string cpf, string email, string senhaHash, Cargo cargo)
 
     {
-        if (string.IsNullOrWhiteSpace(nome)) { 
+        if (string.IsNullOrWhiteSpace(nome) || nome.Length < 2) { 
             throw new ArgumentException("Nome não pode ser nulo ou vazio.");
         }
 

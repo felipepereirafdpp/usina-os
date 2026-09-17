@@ -6,10 +6,9 @@ namespace UsinaOS.Interfaces.Funcionario
     public interface IFuncionarioService
     {
         Task<FuncionarioResponse> CadastrarFuncionario(CreateFuncionario informacoesFuncionario);
-        Task<FuncionarioResponse> BuscarFuncionarioId(Guid Id);
-        Task<FuncionarioResponse> BuscarFuncionarioCPF(string CPF);
+        Task<FuncionarioResponse> BuscarFuncionarioPorIdPorCpf(Guid? Id,string? CPF);
         Task<List<FuncionarioResponse>> ListarFuncionarios();
-        Task<FuncionarioResponse> AtualizarFuncionario(UpdateFuncionario informacoesFuncionario);
+        Task<FuncionarioResponse> AtualizarFuncionario(string Cpf,UpdateFuncionario informacoesFuncionario);
         Task<bool> DeletarFuncionario(string CPF);
 
     }
