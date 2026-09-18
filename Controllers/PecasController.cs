@@ -14,14 +14,14 @@ public class PecasController : ControllerBase
 
     // GET: api/Peca
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Peca>>> GetPeca()
+    public async Task<ActionResult<IEnumerable<PecaEntitie>>> GetPeca()
     {
         return await _context.Pecas.ToListAsync();
     }
 
     // GET: api/Peca/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<Peca>> GetPeca(System.Guid id)
+    public async Task<ActionResult<PecaEntitie>> GetPeca(System.Guid id)
     {
         var peca = await _context.Pecas.FindAsync(id);
 
@@ -36,7 +36,7 @@ public class PecasController : ControllerBase
     // PUT: api/Peca/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutPeca(System.Guid? id, Peca peca)
+    public async Task<IActionResult> PutPeca(System.Guid? id, PecaEntitie peca)
     {
         if (id != peca.Id)
         {
@@ -67,7 +67,7 @@ public class PecasController : ControllerBase
     // POST: api/Peca
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<Peca>> PostPeca(Peca peca)
+    public async Task<ActionResult<PecaEntitie>> PostPeca(PecaEntitie peca)
     {
         _context.Pecas.Add(peca);
         await _context.SaveChangesAsync();

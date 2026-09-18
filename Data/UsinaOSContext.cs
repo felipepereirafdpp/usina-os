@@ -7,6 +7,6 @@ public class UsinaOSContext(DbContextOptions<UsinaOSContext> options) : DbContex
     public DbSet<Endereco> Enderecos { get; set; } = default!;
     public DbSet<ItemOrdemServico> ItensOredmServico { get; set; } = default!;
     public DbSet<FuncionarioEntitie> Funcionarios { get; set; } = default!;
-    public DbSet<Peca> Pecas { get; set; } = default!;
+    public DbSet<PecaEntitie> Pecas { get; set; } = default!;
     public DbSet<OrdemServico> OrdemServicos { get; set; } = default!;
 }

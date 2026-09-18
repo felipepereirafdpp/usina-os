@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UsinaOS.Domain.Entities;
 
-public class Peca
+public class PecaEntitie
 {
     [Key] public Guid Id { get; set; }
 
@@ -18,9 +18,9 @@ public class Peca
 
     public string? Observacao { get; set; }
 
-    public Peca() { }
+    public PecaEntitie() { }
 
-    public Peca(string nome, string codigoPeca, string materialPeca, string descricaoPeca)
+    public PecaEntitie(string nome, string codigoPeca, string materialPeca, string descricaoPeca)
 
     {
         if (string.IsNullOrEmpty(nome))
