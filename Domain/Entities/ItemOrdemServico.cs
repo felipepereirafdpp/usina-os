@@ -20,7 +20,7 @@ public class ItemOrdemServico
 
     public ItemOrdemServico() { }
 
-    public ItemOrdemServico(Guid ordemServicoId, Guid pecaId, OrdemServico ordemServico, Peca peca, int quantidade)
+    public ItemOrdemServico(Guid ordemServicoId, Guid pecaId, OrdemServico ordemServico, PecaEntitie peca, int quantidade)
     {
         if (ordemServicoId == Guid.Empty)
             throw new ArgumentException("ID da Ordem de Serviço não pode ser vazio.");
