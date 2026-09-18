@@ -13,7 +13,7 @@ public class ItemOrdemServico
 
     public Guid PecaId { get; set; }
 
-    [Required] public Peca Peca { get; set; }
+    [Required] public PecaEntitie Peca { get; set; }
 
     [Required] public int Quantidade { get; set; }
 

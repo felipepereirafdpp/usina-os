@@ -1,4 +1,5 @@
-﻿using UsinaOS.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using UsinaOS.Domain.Entities;
 using UsinaOS.DTO.Peca.Request;
 using UsinaOS.DTO.Peca.Response;
 using UsinaOS.Exceptions.Peca;
@@ -44,7 +45,7 @@ namespace UsinaOS.Services.Peca
             }
             if (string.IsNullOrWhiteSpace(dadosPeca.DescricaoPeca))
             {
-                throw new ValidaDescricaoPeca("Descrição é obrigatoria");
+                throw new ValidaDescricaoPecaException("Descrição é obrigatoria");
             }
             if (string.IsNullOrWhiteSpace(dadosPeca.MaterialPeca))
             {
@@ -58,7 +59,6 @@ namespace UsinaOS.Services.Peca
                 Nome = dadosPeca.Nome,
                 MaterialPeca = dadosPeca.MaterialPeca,
         
-            
             };
 
             try
@@ -81,6 +81,123 @@ namespace UsinaOS.Services.Peca
             };
 
             return resposta;
+        }
+
+        public async Task<PecaResponse> BuscarPecaPorIdPorCodigoPorNome(Guid? id, string? codigoPeca, string? nome)
+        {
+            if ((id == null || id  == Guid.Empty) && codigoPeca == null && nome == null)
+            {
+                throw new ValidaBuscaPecaException("O id, código ou nome são obrigatórios");
+            }
+            
+
+            PecaEntitie? peca = null;
+
+            if (id != null && id != Guid.Empty)
+            {
+                peca = await _context.Pecas.FindAsync(id);
+            }
+            else if (codigoPeca != null)
+            {
+                if (ValidaCodigoPeca(codigoPeca) == true)
+                {
+                    peca = await _context.Pecas.FirstOrDefaultAsync(u => u.CodigoPeca == codigoPeca);
+                    
+                }
+            }else if(nome != null)
+            {
+                peca = await _context.Pecas.FirstOrDefaultAsync(u => u.Nome == nome);
+            }
+            if (peca == null)
+            {
+                throw new ValidaBuscaPecaException("Parametro invalido");
+            }
+            var resposta = new PecaResponse{
+                Id = peca.Id,
+                Nome = peca.Nome,
+                CodigoPeca = peca.CodigoPeca,
+                MaterialPeca = peca.MaterialPeca,
+                
+            };
+            return resposta;
+        }
+        public async Task<List<PecaResponse>> ListarPecas()
+        {
+            var pecas = await _context.Pecas
+                .OrderBy(u => u.Nome)
+                .Select(peca => new PecaResponse
+                {
+                    Nome = peca.Nome,
+                    CodigoPeca = peca.CodigoPeca,
+                    MaterialPeca = peca.MaterialPeca,
+                    Id = peca.Id
+
+                }).ToListAsync();
+
+            return (pecas);
+
+        }
+
+        public async Task<PecaResponse> AtualizarPeca(string codigoPeca,UpdatePeca dadosNovosPeca)
+        {
+            if(ValidaCodigoPeca(codigoPeca) == false)
+            {
+                throw new ValidaCodigoPecaException("Codigo invalido");
+            }
+            if (string.IsNullOrWhiteSpace(dadosNovosPeca.Nome))
+            {
+                throw new ValidaNomePecaException("Nome é obrigatorio");
+            }
+            if (string.IsNullOrWhiteSpace(dadosNovosPeca.MaterialPeca))
+            {
+                throw new ValidaMaterialPecaException("Material é obrigatorio");
+            }
+            if (string.IsNullOrWhiteSpace(dadosNovosPeca.DescricaoPeca))
+            {
+                throw new ValidaDescricaoPecaException("Descrição é obrigatoria");
+            }
+
+            var pecaEncontrado = await _context.Pecas.FirstOrDefaultAsync(u => u.CodigoPeca == codigoPeca);
+
+            if (pecaEncontrado == null)
+            {
+                throw new ValidaBuscaPecaException("Busca falhou");
+            }
+
+            try
+            {
+                pecaEncontrado.CodigoPeca = dadosNovosPeca.CodigoPeca;
+                pecaEncontrado.MaterialPeca = dadosNovosPeca.MaterialPeca;
+                pecaEncontrado.Nome = dadosNovosPeca.Nome; 
+                pecaEncontrado.DescricaoPeca = dadosNovosPeca.DescricaoPeca;
+
+                await _context.SaveChangesAsync();
+            }
+            catch(Exception e)
+            {
+                throw new ArgumentException("Erro ao salvar no banco.", e);
+            }
+            var resposta = new PecaResponse
+            {
+                Id = pecaEncontrado.Id,
+                CodigoPeca = dadosNovosPeca.CodigoPeca,
+                MaterialPeca = dadosNovosPeca.MaterialPeca,
+                Nome = dadosNovosPeca.Nome,
+
+
+            };
+
+            return resposta;
+        }
+
+        public Task<bool> DeletarPeca(string codigoPeca)
+        {
+            if (ValidaCodigoPeca(codigoPeca) == false)
+            {
+                throw new ValidaCodigoPecaException("Codigo Peca invalida");
+            }
+
+           
         }
     }
 }
