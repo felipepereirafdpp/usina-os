@@ -11,7 +11,7 @@ public class OrdemServico
     [Required][StringLength(50)] public string NumeroOrdemServico { get; set; }
 
     public Guid ClienteId { get; set; }
-    [Required] public Cliente Cliente { get; set; }
+    [Required] public ClienteEntitie Cliente { get; set; }
     [Required] public DateTime DataAbertura { get; set; }
     [Required] public DateTime DataPrazo { get; set; }
     [Required] public Prioridades Prioridade { get; set; }

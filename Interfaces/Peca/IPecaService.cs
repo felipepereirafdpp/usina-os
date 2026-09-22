@@ -6,9 +6,8 @@ namespace UsinaOS.Interfaces.Peca
     public interface IPecaService
     {
         Task<PecaResponse> CadastrarPeca(CreatePeca informacoesPeca);
-        Task<PecaResponse> BuscarPecaPorId(Guid id);
-        Task<PecaResponse> BuscarPecaPorCodigo(string codigoPeca);
-        Task<PecaResponse> BuscarPecaPorNome(string nome);
+        Task<PecaResponse> BuscarPecaPorIdPorCodigoPorNome(Guid? id, string? codigoPeca, string? nome);
+        Task<PecaResponse> AtualizarPeca(string codigoPeca,UpdatePeca informacoesPeca);
         Task<List<PecaResponse>> ListarPecas();
         Task<bool> DeletarPeca(string codigoPeca);
 
