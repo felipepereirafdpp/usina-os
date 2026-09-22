@@ -11,14 +11,14 @@ namespace UsinaOS.Services.Peca
     {
         private readonly UsinaOSContext _context;
 
-        private readonly OrdemServico _ordemServico;
+  
 
 
 
-        public PecaService(UsinaOSContext context, OrdemServico ordemServico)
+        public PecaService(UsinaOSContext context)
         {
-            context = _context;
-            ordemServico = _ordemServico;
+            _context = context;
+            
         }
 
         private bool ValidaCodigoPeca(string codigoPeca)
@@ -57,6 +57,12 @@ namespace UsinaOS.Services.Peca
                 throw new ValidaMaterialPecaException("Material é obrigatorio");
             }
 
+            var codigoIgual = await _context.Pecas.AnyAsync(u => u.CodigoPeca == dadosPeca.CodigoPeca);
+            if (codigoIgual)
+            {
+                throw new ValidaCodigoPecaException("Código já cadastrado");
+            }
+
             var pecaNova = new PecaEntitie
             {
                 CodigoPeca = dadosPeca.CodigoPeca,
@@ -81,6 +87,7 @@ namespace UsinaOS.Services.Peca
                 Id = pecaNova.Id,
                 CodigoPeca = pecaNova.CodigoPeca,
                 MaterialPeca = pecaNova.MaterialPeca,
+                DescricaoPeca = pecaNova.DescricaoPeca,
                 Nome = pecaNova.Nome,
 
             };
@@ -124,6 +131,7 @@ namespace UsinaOS.Services.Peca
                 Nome = peca.Nome,
                 CodigoPeca = peca.CodigoPeca,
                 MaterialPeca = peca.MaterialPeca,
+                DescricaoPeca = peca.DescricaoPeca
 
             };
             return resposta;
@@ -136,6 +144,7 @@ namespace UsinaOS.Services.Peca
                 {
                     Nome = peca.Nome,
                     CodigoPeca = peca.CodigoPeca,
+                    DescricaoPeca = peca.DescricaoPeca,
                     MaterialPeca = peca.MaterialPeca,
                     Id = peca.Id
 
@@ -173,7 +182,7 @@ namespace UsinaOS.Services.Peca
 
             try
             {
-                pecaEncontrado.CodigoPeca = dadosNovosPeca.CodigoPeca;
+                
                 pecaEncontrado.MaterialPeca = dadosNovosPeca.MaterialPeca;
                 pecaEncontrado.Nome = dadosNovosPeca.Nome;
                 pecaEncontrado.DescricaoPeca = dadosNovosPeca.DescricaoPeca;
@@ -187,7 +196,8 @@ namespace UsinaOS.Services.Peca
             var resposta = new PecaResponse
             {
                 Id = pecaEncontrado.Id,
-                CodigoPeca = dadosNovosPeca.CodigoPeca,
+                CodigoPeca = pecaEncontrado.CodigoPeca,
+                DescricaoPeca = pecaEncontrado.DescricaoPeca,
                 MaterialPeca = dadosNovosPeca.MaterialPeca,
                 Nome = dadosNovosPeca.Nome,
 
@@ -204,7 +214,7 @@ namespace UsinaOS.Services.Peca
                 throw new ValidaCodigoPecaException("Codigo Peca invalida");
             }
 
-            if (_ordemServico.ItensOrdemServico.Any(item => item.Peca.CodigoPeca == codigoPeca))
+            if (await _context.ItensOredmServico.AnyAsync(item => item.Peca.CodigoPeca == codigoPeca))
             {
                 throw new ValidaExclusaoPecaException("Essa peça esta cadastrada em uma ordem de serviço");
             }

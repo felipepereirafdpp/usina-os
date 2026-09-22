@@ -1,7 +1,7 @@
 ﻿namespace UsinaOS.Exceptions.Peca
 {
-    public class ValidaDescricaoPeca:Exception
+    public class ValidaDescricaoPecaException : Exception
     {
-        public ValidaDescricaoPeca (string message) : base (message) { }
+        public ValidaDescricaoPecaException(string message) : base (message) { }
     }
 }
