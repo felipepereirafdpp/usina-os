@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using UsinaOS.Domain.Enums;
 
 namespace UsinaOS.Domain.Entities;
@@ -8,7 +9,9 @@ namespace UsinaOS.Domain.Entities;
 public class OrdemServico
 {
     [Key] public Guid Id { get; set; }
-    [Required][StringLength(50)] public string NumeroOrdemServico { get; set; }
+
+    //Obrigatorio e deixa o numero da ordem criado automatico
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] public int NumeroOrdemServico { get; set; }
 
     public Guid ClienteId { get; set; }
     [Required] public ClienteEntitie Cliente { get; set; }
@@ -25,7 +28,7 @@ public class OrdemServico
 
     public OrdemServico() { }
 
-    public OrdemServico(string numeroOrdemServico, Cliente cliente, DateTime dataAbertura, DateTime dataPrazo, Prioridades prioridades, StatusOS status, string? observacao = null)
+    public OrdemServico(string numeroOrdemServico, ClienteEntitie cliente, DateTime dataAbertura, DateTime dataPrazo, Prioridades prioridades, StatusOS status, string? observacao = null)
 
     {
         if (string.IsNullOrWhiteSpace(numeroOrdemServico))
