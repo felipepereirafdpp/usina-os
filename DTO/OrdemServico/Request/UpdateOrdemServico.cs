@@ -8,7 +8,6 @@ namespace UsinaOS.DTO.OrdemServico.Request
         public Guid FuncionarioId { get; set; }
         public DateTime DataPrazo { get; set; }
         public Prioridades Prioridade { get; set; }
-        public StatusOS Status { get; set; }
         public List<UpdateItemOrdemServico> Itens { get; set; } = new List<UpdateItemOrdemServico>();
     }
 }

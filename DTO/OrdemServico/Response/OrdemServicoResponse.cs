@@ -8,8 +8,10 @@ namespace UsinaOS.DTO.OrdemServico.Response
     public class OrdemServicoResponse
     {
         public Guid Id { get; set; }
-        public string NumeroOrdemServico { get; set; }
+        public int NumeroOrdemServico { get; set; }
+        public Guid ClienteId { get; set; }
         public ClienteResponse Cliente { get; set; }
+        public Guid FuncionarioId { get; set; }
         public FuncionarioResponse FuncionarioResponsavel { get; set; }
         public DateTime DataAbertura { get; set; }
         public DateTime DataPrazo { get; set; }
