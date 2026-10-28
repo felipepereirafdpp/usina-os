@@ -22,7 +22,7 @@ public class OrdemServicoEntitie
     [Required] public DateTime DataPrazo { get; set; }
     [Required] public Prioridades Prioridade { get; set; }
     [Required] public StatusOS Status { get; set; } = StatusOS.Aberta;
-    public string? Observacao { get; set; }
+    public string Observacao { get; set; }
 
     private readonly List<ItemOrdemServico> _itensOrdemServico = new();
 

@@ -14,7 +14,7 @@ using UsinaOS.Interfaces.OrdemServico;
 
 namespace UsinaOS.Services.OrdemServico
 {
-    public class OrdemServicoService: IOrdemServicoService
+    public class OrdemServicoService : IOrdemServicoService
     {
         private readonly UsinaOSContext _context;
 
@@ -34,13 +34,17 @@ namespace UsinaOS.Services.OrdemServico
             {
                 throw new ValidaIdOrdemServicoExceptions("ID do Funcionario Invalido");
             }
+            if (dadosOrdemServico.Observacao == null)
+            {
+                throw new ValidaIdOrdemServicoExceptions("Observação nao pode ser nula)");
+            }
             if (dadosOrdemServico.DataPrazo < DateTime.Today)
             {
                 throw new ValidaDataPrazoException("A data prazo é invalida");
             }
             if (dadosOrdemServico?.Prioridade == null)
             {
-                throw new ValidaPrioridadeException("Prioridade Invalida"); 
+                throw new ValidaPrioridadeException("Prioridade Invalida");
             }
             if (dadosOrdemServico.Itens == null || dadosOrdemServico.Itens.Count == 0)
             {
@@ -48,22 +52,23 @@ namespace UsinaOS.Services.OrdemServico
             }
 
 
-            int[] registros = new int [dadosOrdemServico.Itens.Count];
+            int[] registros = new int[dadosOrdemServico.Itens.Count];
 
-            for (int i = 0; i < registros.Length; i++) {
+            for (int i = 0; i < registros.Length; i++)
+            {
 
                 var idpeca = dadosOrdemServico.Itens[i].PecaId;
                 var quantidade = dadosOrdemServico.Itens[i].Quantidade;
 
-                
+
 
                 if (!await _context.Pecas.AnyAsync(e => e.Id == idpeca))
                 {
                     throw new ValidaPecaExcption("A peça não existe");
                 }
-              
-                if (quantidade <= 0 || quantidade % 1 != 0)
-                
+
+                if (quantidade <= 0 && quantidade % 1 != 0)
+
                 {
                     throw new ValidaPecaExcption("A peça tem que ser maior que 0");
                 }
@@ -81,11 +86,11 @@ namespace UsinaOS.Services.OrdemServico
             }
             var itensConvertidos = dadosOrdemServico.Itens.Select(itemDto => new ItemOrdemServico
             {
-                
+
                 PecaId = itemDto.PecaId,
                 Quantidade = itemDto.Quantidade,
-              
-               
+
+
             });
 
             var ordemServico = new OrdemServicoEntitie
@@ -105,7 +110,8 @@ namespace UsinaOS.Services.OrdemServico
                 _context.OrdemServicos.Add(ordemServico);
                 await _context.SaveChangesAsync();
 
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 throw new ArgumentException("Erro ao salvar", e);
             }
@@ -114,10 +120,12 @@ namespace UsinaOS.Services.OrdemServico
             {
                 Id = ordemServico.Id,
                 ClienteId = ordemServico.ClienteId,
-                Cliente = new ClienteResponse {
+                Cliente = new ClienteResponse
+                {
                     Id = ordemServico.Cliente.Id,
                     Cnpj = ordemServico.Cliente.Cnpj,
-                    Endereco = new EnderecoResponse {
+                    Endereco = new EnderecoResponse
+                    {
                         Id = ordemServico.Cliente.Endereco.Id,
                         Cidade = ordemServico.Cliente.Endereco.Cidade,
                         Logradouro = ordemServico.Cliente.Endereco.Logradouro,
@@ -132,7 +140,8 @@ namespace UsinaOS.Services.OrdemServico
                 DataPrazo = dadosOrdemServico.DataPrazo,
                 DataAbertura = ordemServico.DataAbertura,
                 FuncionarioId = ordemServico.FuncionarioId,
-                FuncionarioResponsavel = new FuncionarioResponse { 
+                FuncionarioResponsavel = new FuncionarioResponse
+                {
                     Cargo = ordemServico.Funcionario.Cargo,
                     Email = ordemServico.Funcionario.Email,
                     Nome = ordemServico.Funcionario.Nome,
@@ -140,9 +149,10 @@ namespace UsinaOS.Services.OrdemServico
                 },
                 ItensOrdemServico = ordemServico.ItensOrdemServico.Select(item => new ItemOrdemServicoResponse
                 {
-                
-                
-                    Peca = new PecaResponse { 
+
+
+                    Peca = new PecaResponse
+                    {
                         CodigoPeca = item.Peca.CodigoPeca,
                         Id = item.Peca.Id,
                         Nome = item.Peca.Nome,
@@ -150,7 +160,7 @@ namespace UsinaOS.Services.OrdemServico
                         MaterialPeca = item.Peca.MaterialPeca
                     },
                     Quantidade = item.Quantidade
-                  
+
                 }).ToList(),
                 NumeroOrdemServico = ordemServico.NumeroOrdemServico,
 
@@ -161,9 +171,84 @@ namespace UsinaOS.Services.OrdemServico
         }
 
 
-        public async Task<OrdemServicoResponse> AtualizarOs(UpdateOrdemServico informacoesOrdemServico)
+        public async Task<OrdemServicoResponse> AtualizarOs(int numeroOs, UpdateOrdemServico informacoesOrdemServico)
         {
-            
-        }
+            if (numeroOs == null)
+            {
+                throw new ValidaIdOrdemServicoExceptions("Numero da ordem Servico invalido");
+            }
+            if (informacoesOrdemServico.DataPrazo < DateTime.Today)
+            {
+                throw new ValidaDataPrazoException("A data prazo é invalida");
+            }
+            var atualBanco = await _context.OrdemServicos.FirstOrDefaultAsync(u => u.NumeroOrdemServico == numeroOs);
+
+            if (atualBanco.Status == StatusOS.Concluida || atualBanco.Status == StatusOS.Cancelada)
+            {
+                throw new ArgumentException("Não é possivel atualizar uma OS concluida ou cancelada");
+            }
+            if (atualBanco == null)
+            {
+                throw new ArgumentException("Nenhuma OS encontrada");
+            }
+
+            if (informacoesOrdemServico?.Prioridade != null)
+            {
+                if (Enum.IsDefined(typeof(Prioridades), informacoesOrdemServico.Prioridade) == false)
+                {
+                    throw new ValidaPrioridadeException("A prioridade é invalida");
+                }
+
+                if (informacoesOrdemServico.Funcionario.Cargo != Cargo.Encarregado)
+                {
+                    throw new ValidaPrioridadeException("Somente engarregado pode alterar a prioridade");
+                }
+            }
+            if (informacoesOrdemServico?.Status != null)
+            {
+                if (Enum.IsDefined(typeof(StatusOS), informacoesOrdemServico.Status) == false)
+                {
+                    throw new ArgumentException("O status é invalido");
+                }
+
+            }
+
+            int[] registros = new int[informacoesOrdemServico.Itens.Count];
+
+            for (int i = 0; i < registros.Length; i++)
+            {
+                var pecaId = informacoesOrdemServico.Itens[i].PecaId;
+                var quantidade = informacoesOrdemServico.Itens[i].Quantidade;
+
+                if (!await _context.Pecas.AnyAsync(u => u.Id == pecaId))
+                {
+                    throw new ValidaListaItensException("Peca não encontrada");
+                }
+
+                if (quantidade < 0 && quantidade % 1 != 0)
+                {
+                    throw new ValidaListaItensException("Quantidade invalida.");
+                }
+
+
+            }
+                for (int i = 0; i < registros.Length; i++)
+                {
+
+                    for (int j = 0; j < registros.Length; j++)
+                    {
+                        var ordemServico = await _context.OrdemServicos.Include(o => o.ItensOrdemServico).FirstOrDefaultAsync(u => u.NumeroOrdemServico == numeroOs);
+                        var idsPecaBanco = ordemServico.ItensOrdemServico.Select(item => item.Id).ToList();
+
+                  
+                        if (informacoesOrdemServico.Itens[i].PecaId == idsPecaBanco[j] )
+                        {
+                            throw new ValidaListaItensException("Essa peça ja esta na lista e não pode ser atualizado ");
+                        }
+
+                    }
+
+                }
+            }
     }
 }
