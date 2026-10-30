@@ -173,7 +173,8 @@ namespace UsinaOS.Services.OrdemServico
 
         public async Task<OrdemServicoResponse> AtualizarOs(int numeroOs, UpdateOrdemServico informacoesOrdemServico)
         {
-            if (numeroOs == null)
+            // Validações iniciais 
+            if (numeroOs == null && numeroOs <= 0)
             {
                 throw new ValidaIdOrdemServicoExceptions("Numero da ordem Servico invalido");
             }
@@ -183,14 +184,16 @@ namespace UsinaOS.Services.OrdemServico
             }
             var atualBanco = await _context.OrdemServicos.FirstOrDefaultAsync(u => u.NumeroOrdemServico == numeroOs);
 
-            if (atualBanco.Status == StatusOS.Concluida || atualBanco.Status == StatusOS.Cancelada)
-            {
-                throw new ArgumentException("Não é possivel atualizar uma OS concluida ou cancelada");
-            }
             if (atualBanco == null)
             {
                 throw new ArgumentException("Nenhuma OS encontrada");
             }
+
+            if (atualBanco.Status == StatusOS.Concluida || atualBanco.Status == StatusOS.Cancelada)
+            {
+                throw new ArgumentException("Não é possivel atualizar uma OS concluida ou cancelada");
+            }
+
 
             if (informacoesOrdemServico?.Prioridade != null)
             {
@@ -213,8 +216,10 @@ namespace UsinaOS.Services.OrdemServico
 
             }
 
+            // crio um novo array com o tamanho dos itens passados 
             int[] registros = new int[informacoesOrdemServico.Itens.Count];
 
+            // pego item po item e vejo seu atributo de pecaId e quantidade de cada item atribuito no array e valido
             for (int i = 0; i < registros.Length; i++)
             {
                 var pecaId = informacoesOrdemServico.Itens[i].PecaId;
@@ -232,23 +237,106 @@ namespace UsinaOS.Services.OrdemServico
 
 
             }
-                for (int i = 0; i < registros.Length; i++)
+            // vejo se o ite m adicionado ja nao esta na OS que esta sendo editada
+            for (int i = 0; i < registros.Length; i++)
+            {
+
+                for (int j = 0; j < registros.Length; j++)
                 {
+                    var ordemServico = await _context.OrdemServicos.Include(o => o.ItensOrdemServico).FirstOrDefaultAsync(u => u.NumeroOrdemServico == numeroOs);
 
-                    for (int j = 0; j < registros.Length; j++)
+                    var idsPecaBanco = ordemServico.ItensOrdemServico.Select(item => item.Id).ToList();
+
+
+                    if (informacoesOrdemServico.Itens[i].PecaId == idsPecaBanco[j])
                     {
-                        var ordemServico = await _context.OrdemServicos.Include(o => o.ItensOrdemServico).FirstOrDefaultAsync(u => u.NumeroOrdemServico == numeroOs);
-                        var idsPecaBanco = ordemServico.ItensOrdemServico.Select(item => item.Id).ToList();
-
-                  
-                        if (informacoesOrdemServico.Itens[i].PecaId == idsPecaBanco[j] )
-                        {
-                            throw new ValidaListaItensException("Essa peça ja esta na lista e não pode ser atualizado ");
-                        }
-
+                        throw new ValidaListaItensException("Essa peça ja esta na lista e não pode ser atualizado ");
                     }
 
                 }
+
             }
+
+                var itensConvertidos = informacoesOrdemServico.Itens.Select(itemDto =>
+                     new ItemOrdemServico
+                     {
+                         PecaId = itemDto.PecaId,
+                         Quantidade = itemDto.Quantidade
+                     }).ToList();
+
+                atualBanco.AdicionarItens(itensConvertidos);
+            
+                atualBanco.FuncionarioId = informacoesOrdemServico.FuncionarioId;
+                atualBanco.DataPrazo = informacoesOrdemServico.DataPrazo;
+                atualBanco.Observacao = informacoesOrdemServico.Observacao;
+                atualBanco.Prioridade = informacoesOrdemServico.Prioridade;
+            try
+            {
+                
+                await _context.SaveChangesAsync();
+
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException("Erro ao salvar", e);
+            }
+
+
+            var resposta = new OrdemServicoResponse
+            {
+                Id = atualBanco.Id,
+                ClienteId = atualBanco.ClienteId,
+                Cliente = new ClienteResponse
+                {
+                    Id = atualBanco.Cliente.Id,
+                    Cnpj = atualBanco.Cliente.Cnpj,
+                    Endereco = new EnderecoResponse
+                    {
+                        Id = atualBanco.Cliente.Endereco.Id,
+                        Cidade = atualBanco.Cliente.Endereco.Cidade,
+                        Logradouro = atualBanco.Cliente.Endereco.Logradouro,
+                        Pais = atualBanco.Cliente.Endereco.Pais,
+                    },
+                    Observacao = atualBanco.Cliente.Observacao,
+                    RazaoSocial = atualBanco.Cliente.RazaoSocial,
+                    Telefone = atualBanco.Cliente.Telefone
+                },
+                Status = atualBanco.Status,
+                Prioridade = atualBanco.Prioridade,
+                DataPrazo = atualBanco.DataPrazo,
+                DataAbertura = atualBanco.DataAbertura,
+                FuncionarioId = atualBanco.FuncionarioId,
+                FuncionarioResponsavel = new FuncionarioResponse
+                {
+                    Cargo = atualBanco.Funcionario.Cargo,
+                    Email = atualBanco.Funcionario.Email,
+                    Nome = atualBanco.Funcionario.Nome,
+                    Id = atualBanco.Funcionario.Id
+                },
+                ItensOrdemServico = atualBanco.ItensOrdemServico.Select(item => new ItemOrdemServicoResponse
+                {
+
+
+                    Peca = new PecaResponse
+                    {
+                        CodigoPeca = item.Peca.CodigoPeca,
+                        Id = item.Peca.Id,
+                        Nome = item.Peca.Nome,
+                        DescricaoPeca = item.Peca.DescricaoPeca,
+                        MaterialPeca = item.Peca.MaterialPeca
+                    },
+                    Quantidade = item.Quantidade
+
+                }).ToList(),
+                NumeroOrdemServico = atualBanco.NumeroOrdemServico,
+
+
+
+
+            };
+
+            return resposta;
+
+        }
     }
 }
