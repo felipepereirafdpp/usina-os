@@ -14,14 +14,14 @@ public class OrdemServicoesController : ControllerBase
 
     // GET: api/OrdemServico
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<OrdemServico>>> GetOrdemServico()
+    public async Task<ActionResult<IEnumerable<OrdemServicoEntitie>>> GetOrdemServico()
     {
         return await _context.OrdemServicos.ToListAsync();
     }
 
     // GET: api/OrdemServico/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<OrdemServico>> GetOrdemServico(System.Guid id)
+    public async Task<ActionResult<OrdemServicoEntitie>> GetOrdemServico(System.Guid id)
     {
         var ordemservico = await _context.OrdemServicos.FindAsync(id);
 
@@ -36,7 +36,7 @@ public class OrdemServicoesController : ControllerBase
     // PUT: api/OrdemServico/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutOrdemServico(System.Guid? id, OrdemServico ordemservico)
+    public async Task<IActionResult> PutOrdemServico(System.Guid? id, OrdemServicoEntitie ordemservico)
     {
         if (id != ordemservico.Id)
         {
@@ -67,7 +67,7 @@ public class OrdemServicoesController : ControllerBase
     // POST: api/OrdemServico
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<OrdemServico>> PostOrdemServico(OrdemServico ordemservico)
+    public async Task<ActionResult<OrdemServicoEntitie>> PostOrdemServico(OrdemServicoEntitie ordemservico)
     {
         _context.OrdemServicos.Add(ordemservico);
         await _context.SaveChangesAsync();

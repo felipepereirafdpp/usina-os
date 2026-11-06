@@ -8,7 +8,8 @@ public class UsinaOSContext(DbContextOptions<UsinaOSContext> options) : DbContex
     public DbSet<ItemOrdemServico> ItensOredmServico { get; set; } = default!;
     public DbSet<FuncionarioEntitie> Funcionarios { get; set; } = default!;
     public DbSet<PecaEntitie> Pecas { get; set; } = default!;
-    public DbSet<OrdemServico> OrdemServicos { get; set; } = default!;
+    public DbSet<OrdemServicoEntitie> OrdemServicos { get; set; } = default!;
+    public DbSet<AuthEntitie> Auth { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -19,5 +20,11 @@ public class UsinaOSContext(DbContextOptions<UsinaOSContext> options) : DbContex
         {
             relationship.DeleteBehavior = DeleteBehavior.Restrict;
         }
+
+        modelBuilder.Entity<OrdemServicoEntitie>()
+        .Property(x => x.DataAbertura)
+        .HasDefaultValueSql("GETDATE()");
+
     }
+
 }

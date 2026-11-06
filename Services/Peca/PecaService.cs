@@ -139,7 +139,7 @@ namespace UsinaOS.Services.Peca
         public async Task<List<PecaResponse>> ListarPecas()
         {
             var pecas = await _context.Pecas
-                .OrderBy(u => u.Nome)
+                .OrderBy(u => u.CodigoPeca)
                 .Select(peca => new PecaResponse
                 {
                     Nome = peca.Nome,
@@ -238,5 +238,7 @@ namespace UsinaOS.Services.Peca
             return true;
 
         }
+
+
     }
 }

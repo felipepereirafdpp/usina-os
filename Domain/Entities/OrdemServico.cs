@@ -1,31 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using UsinaOS.Domain.Enums;
 
 namespace UsinaOS.Domain.Entities;
 
-public class OrdemServico
+public class OrdemServicoEntitie
 {
     [Key] public Guid Id { get; set; }
-    [Required][StringLength(50)] public string NumeroOrdemServico { get; set; }
+
+    //Obrigatorio e deixa o numero da ordem criado automatico
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] public int NumeroOrdemServico { get; set; }
 
     public Guid ClienteId { get; set; }
     [Required] public ClienteEntitie Cliente { get; set; }
-    [Required] public DateTime DataAbertura { get; set; }
+
+    public Guid FuncionarioId { get; set; }
+    [Required] public FuncionarioEntitie Funcionario { get; set; }
+     public DateTime DataAbertura { get; set; }
     [Required] public DateTime DataPrazo { get; set; }
     [Required] public Prioridades Prioridade { get; set; }
-    [Required] public StatusOS Status { get; set; }
-    public string? Observacao { get; set; }
+    [Required] public StatusOS Status { get; set; } = StatusOS.Aberta;
+    public string Observacao { get; set; }
 
     private readonly List<ItemOrdemServico> _itensOrdemServico = new();
 
     public IReadOnlyCollection<ItemOrdemServico> ItensOrdemServico
         => _itensOrdemServico;
 
-    public OrdemServico() { }
+    public void AdicionarItens(IEnumerable<ItemOrdemServico> itens)
+    {
+        if (itens != null)
+        {
+            _itensOrdemServico.AddRange(itens);
+        }
+    }
+    public OrdemServicoEntitie() { }
 
-    public OrdemServico(string numeroOrdemServico, Cliente cliente, DateTime dataAbertura, DateTime dataPrazo, Prioridades prioridades, StatusOS status, string? observacao = null)
+    public OrdemServicoEntitie(string numeroOrdemServico, ClienteEntitie cliente, DateTime dataAbertura, DateTime dataPrazo, Prioridades prioridades, StatusOS status, string? observacao = null)
 
     {
         if (string.IsNullOrWhiteSpace(numeroOrdemServico))
@@ -44,7 +57,6 @@ public class OrdemServico
             throw new ArgumentException("Data do prazo não pode ser menor que a Data de Abertura.");
 
         Id = Guid.NewGuid();
-        NumeroOrdemServico = numeroOrdemServico;
         ClienteId = cliente.Id;
         Cliente = cliente;
         DataAbertura = dataAbertura;

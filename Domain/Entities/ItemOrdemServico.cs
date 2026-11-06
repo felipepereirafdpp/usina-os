@@ -9,7 +9,7 @@ public class ItemOrdemServico
 
     public Guid OrdemServicoId { get; set; }
 
-    [Required] public OrdemServico OrdemServico { get; set; }
+    [Required] public OrdemServicoEntitie OrdemServico { get; set; }
 
     public Guid PecaId { get; set; }
 
@@ -20,7 +20,7 @@ public class ItemOrdemServico
 
     public ItemOrdemServico() { }
 
-    public ItemOrdemServico(Guid ordemServicoId, Guid pecaId, OrdemServico ordemServico, PecaEntitie peca, int quantidade)
+    public ItemOrdemServico(Guid ordemServicoId, Guid pecaId, OrdemServicoEntitie ordemServico, PecaEntitie peca, int quantidade)
     {
         if (ordemServicoId == Guid.Empty)
             throw new ArgumentException("ID da Ordem de Serviço não pode ser vazio.");
