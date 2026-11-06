@@ -10,9 +10,9 @@ namespace UsinaOS.Interfaces.OrdemServico
         
         Task<List<OrdemServicoResponse>> BuscarOsPorFuncionario(BuscarOrdemServico filtrosOrdemServico);
  
-        Task<OrdemServicoResponse> AtualizarOs(UpdateOrdemServico informacoesOrdemServico);
-        Task<OrdemServicoResponse> AtualizarStatusOs(string numeroOs,StatusOS statusNovo);
-        Task<bool> DeletarOs(string numeroOs);
+        Task<OrdemServicoResponse> AtualizarOs(int numeroOs, UpdateOrdemServico informacoesOrdemServico);
+        Task<StatusOrdemServicoResponse> AtualizarStatusOs(int numeroOs,StatusOS statusNovo);
+        
 
     }
 }

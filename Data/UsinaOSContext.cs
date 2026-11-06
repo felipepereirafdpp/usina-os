@@ -9,6 +9,7 @@ public class UsinaOSContext(DbContextOptions<UsinaOSContext> options) : DbContex
     public DbSet<FuncionarioEntitie> Funcionarios { get; set; } = default!;
     public DbSet<PecaEntitie> Pecas { get; set; } = default!;
     public DbSet<OrdemServicoEntitie> OrdemServicos { get; set; } = default!;
+    public DbSet<AuthEntitie> Auth { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

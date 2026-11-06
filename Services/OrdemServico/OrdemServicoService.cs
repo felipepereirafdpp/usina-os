@@ -174,14 +174,15 @@ namespace UsinaOS.Services.OrdemServico
         public async Task<OrdemServicoResponse> AtualizarOs(int numeroOs, UpdateOrdemServico informacoesOrdemServico)
         {
             // Validações iniciais 
-            if (numeroOs == null && numeroOs <= 0)
+            if (numeroOs == null && numeroOs < 0)
             {
                 throw new ValidaIdOrdemServicoExceptions("Numero da ordem Servico invalido");
             }
-            if (informacoesOrdemServico.DataPrazo < DateTime.Today)
+            if (informacoesOrdemServico.DataPrazo.Date < DateTime.Today)
             {
                 throw new ValidaDataPrazoException("A data prazo é invalida");
             }
+
             var atualBanco = await _context.OrdemServicos.FirstOrDefaultAsync(u => u.NumeroOrdemServico == numeroOs);
 
             if (atualBanco == null)
@@ -207,14 +208,7 @@ namespace UsinaOS.Services.OrdemServico
                     throw new ValidaPrioridadeException("Somente engarregado pode alterar a prioridade");
                 }
             }
-            if (informacoesOrdemServico?.Status != null)
-            {
-                if (Enum.IsDefined(typeof(StatusOS), informacoesOrdemServico.Status) == false)
-                {
-                    throw new ArgumentException("O status é invalido");
-                }
-
-            }
+            
 
             // crio um novo array com o tamanho dos itens passados 
             int[] registros = new int[informacoesOrdemServico.Itens.Count];
@@ -338,5 +332,147 @@ namespace UsinaOS.Services.OrdemServico
             return resposta;
 
         }
+
+        public async Task<StatusOrdemServicoResponse> AtualizarStatusOs(int numeroOs, StatusOS statusNovo)
+        {
+            if (numeroOs == null || numeroOs < 0)
+            {
+                throw new ValidaIdOrdemServicoExceptions("Numero da ordem Servico invalido");
+            }
+            if (!Enum.IsDefined(typeof(StatusOS), statusNovo))
+            {
+                throw new ArgumentException("Status inválido");
+            }
+            var registroBanco = await _context.OrdemServicos.FirstOrDefaultAsync(u => u.NumeroOrdemServico == numeroOs);
+
+            if (registroBanco != null)
+            {
+                if (registroBanco.Status == StatusOS.Cancelada || registroBanco.Status == StatusOS.Aberta)
+                {
+                    throw new ArgumentException("Não é possivel atualizar uma OS concluida ou cancelada");
+                }
+            }
+            else
+            {
+                throw new ArgumentException("Nenhuma OS encontrada");
+            }
+
+            registroBanco.Status = statusNovo;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch(Exception e)
+            {
+                throw new ArgumentException("Erro ao salvar no banco");
+            }
+
+            var resposta = new StatusOrdemServicoResponse
+            {
+                message = "Status alterado com susseso.",
+                StatusNovo = statusNovo
+
+
+            };
+
+            return resposta;
+        }
+
+        public async Task<List<OrdemServicoResponse>> BuscarOsPorFuncionario(BuscarOrdemServico infoBuscaOrdemServico)
+        {
+            if (infoBuscaOrdemServico == null)
+            {
+                throw new ArgumentException("Não pode conter todas as informações nulas");
+            }
+
+            var query = _context.OrdemServicos.AsQueryable();
+
+            if (infoBuscaOrdemServico.NumeroOs.HasValue)
+            {
+                query = query.Where(u => u.NumeroOrdemServico == infoBuscaOrdemServico.NumeroOs.Value);
+                   
+            }
+            if (infoBuscaOrdemServico.Id.HasValue || infoBuscaOrdemServico.Id != Guid.Empty)
+            {
+                query = query.Where(u => u.Id == infoBuscaOrdemServico.Id);
+            }
+            if (!string.IsNullOrWhiteSpace(infoBuscaOrdemServico.CpfFuncionario))
+            {
+                query = query.Where(u => u.Funcionario.Cpf.Contains(infoBuscaOrdemServico.CpfFuncionario));
+            }
+            if (!string.IsNullOrWhiteSpace(infoBuscaOrdemServico.RazaoSocial))
+            {
+                query = query.Where(u => u.Cliente.RazaoSocial.Contains(infoBuscaOrdemServico.RazaoSocial));
+            }
+            if (infoBuscaOrdemServico.PrioridadesOS.HasValue)
+            {
+                query = query.Where(u => u.Prioridade == infoBuscaOrdemServico.PrioridadesOS.Value);
+
+            }
+            if (infoBuscaOrdemServico.StatusOS.HasValue)
+            {
+                query = query.Where(u => u.Status == infoBuscaOrdemServico.StatusOS.Value);
+
+            }
+
+            var respostaQuery = await query.OrderBy(u=> u.NumeroOrdemServico).Select(ordemServico => new OrdemServicoResponse {
+                Id = ordemServico.Id,
+                ClienteId = ordemServico.ClienteId,
+                Cliente = new ClienteResponse
+                {
+                    Id = ordemServico.Cliente.Id,
+                    Cnpj = ordemServico.Cliente.Cnpj,
+                    Endereco = new EnderecoResponse
+                    {
+                        Id = ordemServico.Cliente.Endereco.Id,
+                        Cidade = ordemServico.Cliente.Endereco.Cidade,
+                        Logradouro = ordemServico.Cliente.Endereco.Logradouro,
+                        Pais = ordemServico.Cliente.Endereco.Pais,
+                    },
+                    Observacao = ordemServico.Cliente.Observacao,
+                    RazaoSocial = ordemServico.Cliente.RazaoSocial,
+                    Telefone = ordemServico.Cliente.Telefone
+                },
+                Status = ordemServico.Status,
+                Prioridade = ordemServico.Prioridade,
+                DataPrazo = ordemServico.DataPrazo,
+                DataAbertura = ordemServico.DataAbertura,
+                FuncionarioId = ordemServico.FuncionarioId,
+                FuncionarioResponsavel = new FuncionarioResponse
+                {
+                    Cargo = ordemServico.Funcionario.Cargo,
+                    Email = ordemServico.Funcionario.Email,
+                    Nome = ordemServico.Funcionario.Nome,
+                    Id = ordemServico.Funcionario.Id
+                },
+                ItensOrdemServico = ordemServico.ItensOrdemServico.Select(item => new ItemOrdemServicoResponse
+                {
+
+
+                    Peca = new PecaResponse
+                    {
+                        CodigoPeca = item.Peca.CodigoPeca,
+                        Id = item.Peca.Id,
+                        Nome = item.Peca.Nome,
+                        DescricaoPeca = item.Peca.DescricaoPeca,
+                        MaterialPeca = item.Peca.MaterialPeca
+                    },
+                    Quantidade = item.Quantidade
+
+                }).ToList()
+
+
+
+            }).ToListAsync();
+
+            return respostaQuery;
+
+
+
+        }
+
+
+      
     }
 }

@@ -137,7 +137,7 @@ namespace UsinaOS.Services.Funcionario
             {
                 throw new ValidaSenhaException("Senha é obrigatoria");
             }
-
+          
             var senhaHash = BCrypt.Net.BCrypt.HashPassword(dadosFuncionarios.SenhaHash);
 
             var funcionarioNovo = new FuncionarioEntitie(
