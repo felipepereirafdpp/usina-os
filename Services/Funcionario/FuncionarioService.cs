@@ -121,9 +121,10 @@ namespace UsinaOS.Services.Funcionario
                 throw new ValidaCpfException("CPF ja cadastrado");
             }
 
-            if (string.IsNullOrWhiteSpace(dadosFuncionarios.Email) || new EmailAddressAttribute().IsValid(dadosFuncionarios.Email))
+            if (string.IsNullOrWhiteSpace(dadosFuncionarios.Email) || !new EmailAddressAttribute().IsValid(dadosFuncionarios.Email))
+
             {
-                throw new ValidaEmailException("Email é obrigatorio");
+                throw new ValidaEmailException("Email obrigatório ou inválido.");
             }
             if (dadosFuncionarios.Cargo == null)
             {

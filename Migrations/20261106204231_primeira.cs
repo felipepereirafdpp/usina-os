@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace UsinaOS.Migrations
 {
     /// <inheritdoc />
-    public partial class PrimeiraMigrations : Migration
+    public partial class primeira : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -81,7 +81,28 @@ namespace UsinaOS.Migrations
                         column: x => x.EnderecoId,
                         principalTable: "Enderecos",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Auth",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FuncionarioId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SenhaHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RefreshTokenHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RefreshTokenExpiraEm = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Auth", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Auth_Funcionarios_FuncionarioId",
+                        column: x => x.FuncionarioId,
+                        principalTable: "Funcionarios",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -89,13 +110,15 @@ namespace UsinaOS.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    NumeroOrdemServico = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    NumeroOrdemServico = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     ClienteId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DataAbertura = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    FuncionarioId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DataAbertura = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
                     DataPrazo = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Prioridade = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    Observacao = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Observacao = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -105,7 +128,13 @@ namespace UsinaOS.Migrations
                         column: x => x.ClienteId,
                         principalTable: "Clientes",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_OrdemServicos_Funcionarios_FuncionarioId",
+                        column: x => x.FuncionarioId,
+                        principalTable: "Funcionarios",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -125,14 +154,19 @@ namespace UsinaOS.Migrations
                         column: x => x.OrdemServicoId,
                         principalTable: "OrdemServicos",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_ItensOredmServico_Pecas_PecaId",
                         column: x => x.PecaId,
                         principalTable: "Pecas",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Auth_FuncionarioId",
+                table: "Auth",
+                column: "FuncionarioId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Clientes_EnderecoId",
@@ -153,13 +187,18 @@ namespace UsinaOS.Migrations
                 name: "IX_OrdemServicos_ClienteId",
                 table: "OrdemServicos",
                 column: "ClienteId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrdemServicos_FuncionarioId",
+                table: "OrdemServicos",
+                column: "FuncionarioId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Funcionarios");
+                name: "Auth");
 
             migrationBuilder.DropTable(
                 name: "ItensOredmServico");
@@ -172,6 +211,9 @@ namespace UsinaOS.Migrations
 
             migrationBuilder.DropTable(
                 name: "Clientes");
+
+            migrationBuilder.DropTable(
+                name: "Funcionarios");
 
             migrationBuilder.DropTable(
                 name: "Enderecos");

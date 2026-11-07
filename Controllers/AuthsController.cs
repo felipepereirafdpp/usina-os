@@ -1,65 +1,50 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using UsinaOS.Domain.Entities;
+using UsinaOS.DTO.Auth.Request;
+using UsinaOS.DTO.Auth.Response;
+using UsinaOS.DTO.Comun;
+using UsinaOS.Interfaces.Auth;
 
 [Route("api/[controller]")]
 [ApiController]
 public class AuthsController : ControllerBase
 {
-    private readonly UsinaOSContext _context;
-    public AuthsController(UsinaOSContext context)
+    private readonly IAuthService _service;
+   
+    public AuthsController(IAuthService service)
     {
-        _context = context;
+        _service = service;
     }
 
-    
-    // PUT: api/Auth/5
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutAuth(System.Guid? id, AuthEntitie auth)
+
+    [AllowAnonymous]
+    [HttpPost("login")]
+    public async Task<IActionResult> Login(LoginAuth InformacoesLogin)
     {
-        if (id != auth.Id)
+        var funcionario = await _service.LoginFuncionario(InformacoesLogin);
+        if(funcionario == null)
         {
             return BadRequest();
         }
-
-        _context.Entry(auth).State = EntityState.Modified;
-
-        try
+        return StatusCode(201, new ApiResponse<LoginAuthResponse>
         {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
+            Message = "Login realizado com susseso",
+            Data = funcionario
+
+        });
+    }
+
+    [AllowAnonymous]
+    [HttpPost("refresh")]
+    public async Task<ActionResult> PostAuth(RefreshToken auth)
+    {
+        var resultado = await _service.RefreshToken(auth);
+
+        return Ok(new ApiResponse<LoginAuthResponse>
         {
-            if (!AuthExists(id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
-
-        return NoContent();
+            Message = "Tokens renovados com sucesso.",
+            Data = resultado
+        });
     }
 
-    // POST: api/Auth
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-    [HttpPost]
-    public async Task<ActionResult<AuthEntitie>> PostAuth(AuthEntitie auth)
-    {
-        _context.Auth.Add(auth);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction("GetAuth", new { id = auth.Id }, auth);
-    }
-
-
- 
-
-    private bool AuthExists(System.Guid? id)
-    {
-        return _context.Auth.Any(e => e.Id == id);
-    }
 }

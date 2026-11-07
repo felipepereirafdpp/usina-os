@@ -1,100 +1,84 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using UsinaOS.Domain.Entities;
+using UsinaOS.DTO.Cliente.Request;
+using UsinaOS.DTO.Cliente.Response;
+using UsinaOS.DTO.Comun;
+using UsinaOS.Interfaces.Cliente;
 
 [Route("api/[controller]")]
 [ApiController]
 public class ClientesController : ControllerBase
 {
-    private readonly UsinaOSContext _context;
-    public ClientesController(UsinaOSContext context)
+    private readonly IClienteService _service;
+    public ClientesController(IClienteService service)
     {
-        _context = context;
+        _service = service;
     }
 
-    // GET: api/Cliente
+    [Authorize(Roles = "Administrador,Encarregado")]
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ClienteEntitie>>> GetCliente()
+    public async Task<ActionResult> GetClientes()
     {
-        return await _context.Clientes.ToListAsync();
+        var clientes = await _service.ListarClientes();
+        return Ok(new ApiResponse<List<ClienteResponse>>
+        {
+            Message = "Clientes pesquisados com susseso",
+            Data = clientes
+        });
     }
 
-    // GET: api/Cliente/5
-    [HttpGet("{id}")]
-    public async Task<ActionResult<ClienteEntitie>> GetCliente(System.Guid id)
+    [Authorize(Roles = "Administrador,Encarregado")]
+    [HttpGet("{buscar}")]
+    public async Task<ActionResult> GetCliente([FromQuery] Guid? idCliente,[FromQuery] string? cnpjCliente)
     {
-        var cliente = await _context.Clientes.FindAsync(id);
-
-            
-
-        if (cliente == null)
+        var cliente = await _service.BuscarClientePorIdPorCnpj(idCliente, cnpjCliente);
+        return StatusCode(201, new ApiResponse<ClienteResponse>
         {
-            return NotFound();
-        }
+            Message = "Clientes pesquisado com susseso",
+            Data = cliente
+        });
 
-        return cliente;
     }
 
-    // PUT: api/Cliente/5
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutCliente(System.Guid? id, ClienteEntitie cliente)
+    [Authorize(Roles = "Administrador,Encarregado")]
+    [HttpPut]
+    public async Task<IActionResult> PutCliente(string cnpjCliente, UpdateCliente InformacoesCliente)
     {
-        if (id != cliente.Id)
+        var cliente = await _service.AtualizarCliente(cnpjCliente, InformacoesCliente);
+        
+        return StatusCode(201, new ApiResponse<ClienteResponse>
         {
-            return BadRequest();
-        }
-
-        _context.Entry(cliente).State = EntityState.Modified;
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!ClienteExists(id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
-
-        return NoContent();
+            Message = "Clientes pesquisado com susseso",
+            Data = cliente
+        });
     }
 
-    // POST: api/Cliente
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    [Authorize(Roles = "Administrador,Encarregado")]
     [HttpPost]
-    public async Task<ActionResult<ClienteEntitie>> PostCliente(ClienteEntitie cliente)
+    public async Task<ActionResult> PostCliente(CreateCliente InformacoesCliente)
     {
-        _context.Clientes.Add(cliente);
-        await _context.SaveChangesAsync();
+        var cliente = await _service.CadastrarCliente(InformacoesCliente);
 
-        return CreatedAtAction("GetCliente", new { id = cliente.Id }, cliente);
+        return StatusCode(201, new ApiResponse<ClienteResponse>
+        {
+            Message = "Clientes cadastrado com susseso",
+            Data = cliente
+        });
     }
 
-    // DELETE: api/Cliente/5
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteCliente(System.Guid? id)
+    [Authorize(Roles = "Administrador")]
+    [HttpDelete]
+    public async Task<IActionResult> DeleteCliente(string cnpjCliente)
     {
-        var cliente = await _context.Clientes.FindAsync(id);
-        if (cliente == null)
+        var cliente = await _service.DeletarCliente(cnpjCliente);
+
+        if (cliente == true)
         {
-            return NotFound();
+            return Ok();
         }
 
-        _context.Clientes.Remove(cliente);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        return StatusCode(404);
     }
 
-    private bool ClienteExists(System.Guid? id)
-    {
-        return _context.Clientes.Any(e => e.Id == id);
-    }
+   
 }
