@@ -11,20 +11,46 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace UsinaOS.Migrations
 {
     [DbContext(typeof(UsinaOSContext))]
-    [Migration("20260824180147_PrimeiraMigrations")]
-    partial class PrimeiraMigrations
+    [Migration("20261106204231_primeira")]
+    partial class primeira
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.11")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("UsinaOS.Domain.Entities.Cliente", b =>
+            modelBuilder.Entity("UsinaOS.Domain.Entities.AuthEntitie", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("FuncionarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("RefreshTokenExpiraEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RefreshTokenHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SenhaHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FuncionarioId");
+
+                    b.ToTable("Auth");
+                });
+
+            modelBuilder.Entity("UsinaOS.Domain.Entities.ClienteEntitie", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -110,7 +136,7 @@ namespace UsinaOS.Migrations
                     b.ToTable("Enderecos");
                 });
 
-            modelBuilder.Entity("UsinaOS.Domain.Entities.Funcionario", b =>
+            modelBuilder.Entity("UsinaOS.Domain.Entities.FuncionarioEntitie", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -167,7 +193,7 @@ namespace UsinaOS.Migrations
                     b.ToTable("ItensOredmServico");
                 });
 
-            modelBuilder.Entity("UsinaOS.Domain.Entities.OrdemServico", b =>
+            modelBuilder.Entity("UsinaOS.Domain.Entities.OrdemServicoEntitie", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -177,17 +203,24 @@ namespace UsinaOS.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("DataAbertura")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime>("DataPrazo")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("NumeroOrdemServico")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<Guid>("FuncionarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("NumeroOrdemServico")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NumeroOrdemServico"));
 
                     b.Property<string>("Observacao")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Prioridade")
@@ -200,10 +233,12 @@ namespace UsinaOS.Migrations
 
                     b.HasIndex("ClienteId");
 
+                    b.HasIndex("FuncionarioId");
+
                     b.ToTable("OrdemServicos");
                 });
 
-            modelBuilder.Entity("UsinaOS.Domain.Entities.Peca", b =>
+            modelBuilder.Entity("UsinaOS.Domain.Entities.PecaEntitie", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -233,12 +268,23 @@ namespace UsinaOS.Migrations
                     b.ToTable("Pecas");
                 });
 
-            modelBuilder.Entity("UsinaOS.Domain.Entities.Cliente", b =>
+            modelBuilder.Entity("UsinaOS.Domain.Entities.AuthEntitie", b =>
+                {
+                    b.HasOne("UsinaOS.Domain.Entities.FuncionarioEntitie", "Funcionario")
+                        .WithMany()
+                        .HasForeignKey("FuncionarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Funcionario");
+                });
+
+            modelBuilder.Entity("UsinaOS.Domain.Entities.ClienteEntitie", b =>
                 {
                     b.HasOne("UsinaOS.Domain.Entities.Endereco", "Endereco")
                         .WithMany()
                         .HasForeignKey("EnderecoId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Endereco");
@@ -246,16 +292,16 @@ namespace UsinaOS.Migrations
 
             modelBuilder.Entity("UsinaOS.Domain.Entities.ItemOrdemServico", b =>
                 {
-                    b.HasOne("UsinaOS.Domain.Entities.OrdemServico", "OrdemServico")
+                    b.HasOne("UsinaOS.Domain.Entities.OrdemServicoEntitie", "OrdemServico")
                         .WithMany("ItensOrdemServico")
                         .HasForeignKey("OrdemServicoId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("UsinaOS.Domain.Entities.Peca", "Peca")
+                    b.HasOne("UsinaOS.Domain.Entities.PecaEntitie", "Peca")
                         .WithMany()
                         .HasForeignKey("PecaId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("OrdemServico");
@@ -263,18 +309,26 @@ namespace UsinaOS.Migrations
                     b.Navigation("Peca");
                 });
 
-            modelBuilder.Entity("UsinaOS.Domain.Entities.OrdemServico", b =>
+            modelBuilder.Entity("UsinaOS.Domain.Entities.OrdemServicoEntitie", b =>
                 {
-                    b.HasOne("UsinaOS.Domain.Entities.Cliente", "Cliente")
+                    b.HasOne("UsinaOS.Domain.Entities.ClienteEntitie", "Cliente")
                         .WithMany()
                         .HasForeignKey("ClienteId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UsinaOS.Domain.Entities.FuncionarioEntitie", "Funcionario")
+                        .WithMany()
+                        .HasForeignKey("FuncionarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Cliente");
+
+                    b.Navigation("Funcionario");
                 });
 
-            modelBuilder.Entity("UsinaOS.Domain.Entities.OrdemServico", b =>
+            modelBuilder.Entity("UsinaOS.Domain.Entities.OrdemServicoEntitie", b =>
                 {
                     b.Navigation("ItensOrdemServico");
                 });

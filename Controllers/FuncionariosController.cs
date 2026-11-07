@@ -1,98 +1,100 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using UsinaOS.Domain.Entities;
+using UsinaOS.DTO.Comun;
+using UsinaOS.DTO.Funcionario.Request;
+using UsinaOS.DTO.Funcionario.Response;
+using UsinaOS.Interfaces.Funcionario;
 
-[Route("api/[controller]")]
 [ApiController]
+[Route("api/[controller]")]
 public class FuncionariosController : ControllerBase
 {
-    private readonly UsinaOSContext _context;
-    public FuncionariosController(UsinaOSContext context)
+    
+
+    private readonly IFuncionarioService _service;
+
+    public FuncionariosController(IFuncionarioService service)
     {
-        _context = context;
+        _service = service;
     }
 
-    // GET: api/Funcionario
+    [Authorize(Roles = "Administrador,Encarregado")]
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<FuncionarioEntitie>>> GetFuncionario()
+    public async Task<ActionResult> GetFuncionario()
     {
-        return await _context.Funcionarios.ToListAsync();
-    }
 
-    // GET: api/Funcionario/5
-    [HttpGet("{id}")]
-    public async Task<ActionResult<FuncionarioEntitie>> GetFuncionario(System.Guid id)
-    {
-        var funcionario = await _context.Funcionarios.FindAsync(id);
-
-        if (funcionario == null)
+        var funcionarios = await _service.ListarFuncionarios();
+        return Ok(new ApiResponse<List<FuncionarioResponse>>
         {
-            return NotFound();
-        }
-
-        return funcionario;
+            Message = "Funcionarios encontrados com susseso",
+            Data = funcionarios
+            
+        });
     }
 
-    // PUT: api/Funcionario/5
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutFuncionario(System.Guid? id, FuncionarioEntitie funcionario)
+    [Authorize(Roles = "Administrador,Encarregado")]
+    [HttpGet("{filtro}")]
+    public async Task<ActionResult<FuncionarioEntitie>> GetFuncionario(Guid? id, string? cpf)
     {
-        if (id != funcionario.Id)
+       
+        if (id == null || id == Guid.Empty && cpf == null)
         {
             return BadRequest();
         }
-
-        _context.Entry(funcionario).State = EntityState.Modified;
-
-        try
+        var funcionario = await _service.BuscarFuncionarioPorIdPorCpf(id , cpf);
+      
+        return Ok(new ApiResponse<FuncionarioResponse>
         {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!FuncionarioExists(id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
+            Message = "Funcionario encontrado com susseso",
+            Data = funcionario
 
-        return NoContent();
+        });
+
     }
 
-    // POST: api/Funcionario
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    [Authorize(Roles = "Administrador,Encarregado")]
+    [HttpPut]
+    public async Task<IActionResult> PutFuncionario(string cpf, UpdateFuncionario Infofuncionario)
+    {
+        
+        var funcionario = await _service.AtualizarFuncionario(cpf, Infofuncionario);
+
+        return Ok(new ApiResponse<FuncionarioResponse>
+        {
+            Message = "Funcionario atualizado com susseso",
+            Data = funcionario
+
+        });
+    }
+
+    [Authorize(Roles = "Administrador,Encarregado")]
     [HttpPost]
-    public async Task<ActionResult<FuncionarioEntitie>> PostFuncionario(FuncionarioEntitie funcionario)
+    public async Task<ActionResult<FuncionarioEntitie>> PostFuncionario(CreateFuncionario Infofuncionario)
     {
-        _context.Funcionarios.Add(funcionario);
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction("GetFuncionario", new { id = funcionario.Id }, funcionario);
-    }
-
-    // DELETE: api/Funcionario/5
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteFuncionario(System.Guid? id)
-    {
-        var funcionario = await _context.Funcionarios.FindAsync(id);
-        if (funcionario == null)
+        var funcionario = await _service.CadastrarFuncionario(Infofuncionario);
+        return StatusCode(201,new ApiResponse<FuncionarioResponse>
         {
-            return NotFound();
-        }
+            Message = "Funcionario cadastrado com susseso",
+            Data = funcionario
 
-        _context.Funcionarios.Remove(funcionario);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        });
     }
 
-    private bool FuncionarioExists(System.Guid? id)
+    [Authorize(Roles = "Administrador")]
+    [HttpDelete]
+    public async Task<IActionResult> DeleteFuncionario(string cpf)
     {
-        return _context.Funcionarios.Any(e => e.Id == id);
+        var funcionario = await _service.DeletarFuncionario(cpf);
+
+        if (funcionario == true)
+        {
+            return Ok();
+        }
+        
+         return StatusCode(404);
+        
     }
+
+    
 }

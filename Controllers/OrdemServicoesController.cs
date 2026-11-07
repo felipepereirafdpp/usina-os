@@ -1,98 +1,70 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using UsinaOS.Domain.Entities;
+using UsinaOS.Domain.Enums;
+using UsinaOS.DTO.Comun;
+using UsinaOS.DTO.OrdemServico.Request;
+using UsinaOS.DTO.OrdemServico.Response;
+using UsinaOS.Interfaces.OrdemServico;
 
 [Route("api/[controller]")]
 [ApiController]
 public class OrdemServicoesController : ControllerBase
 {
-    private readonly UsinaOSContext _context;
-    public OrdemServicoesController(UsinaOSContext context)
+    private readonly IOrdemServicoService _service;
+    public OrdemServicoesController(IOrdemServicoService service)
     {
-        _context = context;
+        _service = service;
     }
 
-    // GET: api/OrdemServico
+    [Authorize(Roles = "Administrador,Encarregado,OperadorMaquinas")]
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<OrdemServicoEntitie>>> GetOrdemServico()
+    public async Task<ActionResult> GetOrdemServicos([FromBody] BuscarOrdemServico filtrosOrdemServico)
     {
-        return await _context.OrdemServicos.ToListAsync();
+        
+        var resultado = await _service.BuscarOsPorFuncionario(filtrosOrdemServico);
+        return StatusCode(200, new ApiResponse<List<OrdemServicoResponse>>
+        {
+            Message = "Ordem de Serviços encontradas",
+            Data = resultado
+
+        });
+             
     }
 
-    // GET: api/OrdemServico/5
-    [HttpGet("{id}")]
-    public async Task<ActionResult<OrdemServicoEntitie>> GetOrdemServico(System.Guid id)
+    [Authorize(Roles = "Administrador,Encarregado,OperadorMaquinas")]
+    [HttpPut("{status}")]
+    public async Task<IActionResult> PutStatusOrdemServico(int numeroOs, StatusOS statusNovo)
     {
-        var ordemservico = await _context.OrdemServicos.FindAsync(id);
-
-        if (ordemservico == null)
+        var os = await _service.AtualizarStatusOs(numeroOs, statusNovo);
+        return StatusCode(200, new ApiResponse<StatusOrdemServicoResponse>
         {
-            return NotFound();
-        }
-
-        return ordemservico;
+            Message = "Status alterado com susseso.",
+        });
     }
 
-    // PUT: api/OrdemServico/5
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutOrdemServico(System.Guid? id, OrdemServicoEntitie ordemservico)
+
+    [Authorize(Roles = "Administrador,Encarregado")]
+    [HttpPut("{ordemServico}")]
+    public async Task<IActionResult> PutOrdemServico(int numeroOs, UpdateOrdemServico informacoesOrdemServico)
     {
-        if (id != ordemservico.Id)
+        var os = await _service.AtualizarOs(numeroOs, informacoesOrdemServico);
+        return StatusCode(200, new ApiResponse<OrdemServicoResponse>
         {
-            return BadRequest();
-        }
-
-        _context.Entry(ordemservico).State = EntityState.Modified;
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!OrdemServicoExists(id))
-            {
-                return NotFound();
-            }
-            else
-            {
-                throw;
-            }
-        }
-
-        return NoContent();
+            Message = "Ordem de Serviço atualizada com susseso.",
+            Data = os
+        });
     }
 
-    // POST: api/OrdemServico
-    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    [Authorize(Roles = "Administrador,Encarregado")]
     [HttpPost]
-    public async Task<ActionResult<OrdemServicoEntitie>> PostOrdemServico(OrdemServicoEntitie ordemservico)
+    public async Task<ActionResult> PostOrdemServico(CreateOrdemServico informacoesOrdemServico)
     {
-        _context.OrdemServicos.Add(ordemservico);
-        await _context.SaveChangesAsync();
+        var os = await _service.CadastrarOs(informacoesOrdemServico);
 
-        return CreatedAtAction("GetOrdemServico", new { id = ordemservico.Id }, ordemservico);
-    }
-
-    // DELETE: api/OrdemServico/5
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteOrdemServico(System.Guid? id)
-    {
-        var ordemservico = await _context.OrdemServicos.FindAsync(id);
-        if (ordemservico == null)
+        return StatusCode(200, new ApiResponse<OrdemServicoResponse>
         {
-            return NotFound();
-        }
-
-        _context.OrdemServicos.Remove(ordemservico);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
-    }
-
-    private bool OrdemServicoExists(System.Guid? id)
-    {
-        return _context.OrdemServicos.Any(e => e.Id == id);
+            Message = "Ordem de Serviço criada com susseso.",
+            Data = os
+        });
     }
 }
